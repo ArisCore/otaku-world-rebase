@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/theme/colors.dart';
 
 class ErrorText extends StatelessWidget {
-  const ErrorText({super.key, required this.message, required this.onTryAgain});
+  const ErrorText({
+    super.key,
+    this.message = StringConstants.somethingWentWrongError,
+    required this.onTryAgain,
+  });
 
   final String message;
   final VoidCallback onTryAgain;

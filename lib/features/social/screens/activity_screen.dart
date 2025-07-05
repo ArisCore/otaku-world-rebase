@@ -10,6 +10,8 @@ import 'package:otaku_world/core/ui/appbars/simple_app_bar.dart';
 import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 
+import '../../../constants/string_constants.dart';
+
 class ActivityScreen extends StatelessWidget {
   const ActivityScreen({super.key, required this.activityId});
 
@@ -27,7 +29,7 @@ class ActivityScreen extends StatelessWidget {
         appBar: const SimpleAppBar(title: 'Activity'),
         body: BlocConsumer<ActivityBloc, ActivityState>(
           listenWhen: (previous, current) =>
-          current is ActivityLoaded &&
+              current is ActivityLoaded &&
               previous is ActivityLoaded &&
               previous.showProgress != current.showProgress,
           listener: (context, state) {
@@ -38,8 +40,13 @@ class ActivityScreen extends StatelessWidget {
                   barrierDismissible: false,
                   useRootNavigator: true,
                   builder: (context) {
-                    return WillPopScope(
-                      onWillPop: () async => false,
+                    return PopScope(
+                      canPop: false,
+                      onPopInvokedWithResult: (didPop, result) {
+                        if (didPop) {
+                          return;
+                        }
+                      },
                       child: const Center(
                         child: CircularProgressIndicator(),
                       ),
@@ -52,13 +59,13 @@ class ActivityScreen extends StatelessWidget {
             }
           },
           builder: (context, state) {
+            final bloc = context.read<ActivityBloc>();
             if (state is ActivityInitial || state is ActivityLoading) {
               return const Center(child: CircularProgressIndicator());
             } else if (state is ActivityLoaded) {
               return SingleChildScrollView(
                 child: Builder(
                   builder: (context) {
-                    final bloc = context.read<ActivityBloc>();
                     if (state.activity is Fragment$TextActivity) {
                       return TextActivityCard(
                         activity: state.activity,
@@ -81,16 +88,25 @@ class ActivityScreen extends StatelessWidget {
                 ),
               );
             } else if (state is ActivityError) {
-              return Center(
-                child: ErrorText(
-                  message: state.message,
-                  onTryAgain: () {
-                    context.read<ActivityBloc>().add(LoadActivity(client));
-                  },
-                ),
+              return ErrorText(
+                message: state.message,
+                onTryAgain: () {
+                  final client = context.read<GraphqlClientCubit>().getClient();
+                  if (client != null) {
+                    bloc.add(LoadActivity(client));
+                  }
+                },
               );
             } else {
-              return const Text('Unknown State');
+              return ErrorText(
+                message: StringConstants.somethingWentWrongError,
+                onTryAgain: () {
+                  final client = context.read<GraphqlClientCubit>().getClient();
+                  if (client != null) {
+                    bloc.add(LoadActivity(client));
+                  }
+                },
+              );
             }
           },
         ),

@@ -99,8 +99,8 @@ class MediaDetailScreen extends HookWidget {
               floatingActionButton:
                   BlocBuilder<MediaDetailBloc, MediaDetailState>(
                 builder: (context, state) {
-                  if (state is MediaDetailLoaded) {
-                    final user = context.read<ViewerBloc>().getUser();
+                  final user = context.read<ViewerBloc>().getNullableUser();
+                  if (state is MediaDetailLoaded && user != null) {
                     return MediaFloatingActionButton(
                       tabController: tabController,
                       media: Fragment$MediaShort(
@@ -159,8 +159,7 @@ class MediaDetailScreen extends HookWidget {
     switch (tab) {
       case 'Overview':
         return const KeepAliveTab(
-          child: Overview(
-          ),
+          child: Overview(),
         );
       case 'Characters':
         return KeepAliveTab(

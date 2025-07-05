@@ -8,12 +8,12 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
 import 'package:otaku_world/bloc/profile/user_activities_bloc/user_activities_bloc.dart';
 import 'package:otaku_world/constants/filter_constants.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/activities/list_activity_card.dart';
 import 'package:otaku_world/core/ui/activities/message_activity_card.dart';
 import 'package:otaku_world/core/ui/activities/text_activity_card.dart';
 import 'package:otaku_world/core/ui/appbars/simple_app_bar.dart';
 import 'package:otaku_world/core/ui/appbars/simple_sliver_app_bar.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/features/reviews/widgets/bottom_sheet_component.dart';
 import 'package:otaku_world/features/social/widgets/activity_shimmer_list.dart';
 import 'package:otaku_world/generated/assets.dart';
@@ -22,6 +22,7 @@ import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 import '../../../bloc/paginated_data/paginated_data_bloc.dart';
 import '../../../config/router/router_constants.dart';
 import '../../../core/ui/buttons/primary_fab.dart';
+import '../../../core/ui/placeholders/anime_character_placeholder.dart';
 import '../../../theme/colors.dart';
 
 class UserActivitiesScreen extends StatefulWidget {
@@ -76,9 +77,9 @@ class _UserActivitiesScreenState extends State<UserActivitiesScreen> {
               barrierDismissible: false,
               useRootNavigator: true,
               builder: (context) {
-                return WillPopScope(
-                  onWillPop: () async => false,
-                  child: const Center(
+                return const PopScope(
+                  canPop: false,
+                  child: Center(
                     child: CircularProgressIndicator(),
                   ),
                 );
@@ -110,9 +111,16 @@ class _UserActivitiesScreenState extends State<UserActivitiesScreen> {
               body: RefreshIndicator(
                 backgroundColor: AppColors.raisinBlack,
                 onRefresh: () {
-                  return Future.delayed(const Duration(seconds: 2), () {
-                    context.read<UserActivitiesBloc>().add(RefreshData(client));
-                  });
+                  return Future.delayed(
+                    const Duration(seconds: 2),
+                    () {
+                      if (context.mounted) {
+                        context
+                            .read<UserActivitiesBloc>()
+                            .add(RefreshData(client));
+                      }
+                    },
+                  );
                 },
                 child: CustomScrollView(
                   controller: scrollController,
@@ -181,10 +189,11 @@ class _UserActivitiesScreenState extends State<UserActivitiesScreen> {
           } else if (state is PaginatedDataError) {
             return _buildErrorScaffold(
               message: state.message,
-              onPressed: () {},
             );
           } else {
-            return const Text('Unknown State');
+            return _buildErrorScaffold(
+              message: StringConstants.somethingWentWrongError,
+            );
           }
         },
       ),
@@ -218,14 +227,23 @@ class _UserActivitiesScreenState extends State<UserActivitiesScreen> {
 
   Widget _buildErrorScaffold({
     required String message,
-    required VoidCallback onPressed,
   }) {
     return Scaffold(
       appBar: const SimpleAppBar(title: 'Activity'),
       body: Center(
-        child: ErrorText(
-          message: message,
-          onTryAgain: onPressed,
+        child: AnimeCharacterPlaceholder(
+          asset: Assets.charactersErenYeager,
+          height: 300,
+          subheading: message,
+          onTryAgain: () {
+            final bloc = context.read<UserActivitiesBloc>();
+            final client = context.read<GraphqlClientCubit>().getClient();
+            if (client != null) {
+              bloc.add(LoadData(client));
+            }
+          },
+          isError: true,
+          isScrollable: true,
         ),
       ),
     );

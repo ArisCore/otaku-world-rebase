@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:otaku_world/bloc/charcter_detail/media/character_media_bloc.dart';
-import 'package:otaku_world/core/ui/filters/custom_dropdown.dart';
 import 'package:otaku_world/features/character_detail/widgets/character_media_card.dart';
 
 import '../../../../bloc/graphql_client/graphql_client_cubit.dart';
 import '../../../bloc/paginated_data/paginated_data_bloc.dart';
-import '../../../constants/string_constants.dart';
 import '../../../core/ui/placeholders/anime_character_placeholder.dart';
 import '../../../core/ui/shimmers/detail_screens/list/character_list_shimmer.dart';
+import '../../../core/ui/widgets/language_selection_mixin.dart';
 import '../../../core/ui/widgets/media_filter_widget.dart';
 import '../../../generated/assets.dart';
 import '../../../graphql/__generated/graphql/character-detail/character_media.graphql.dart';
@@ -20,10 +19,8 @@ class CharacterMediaList extends StatefulWidget {
   State<CharacterMediaList> createState() => _CharacterMediaListState();
 }
 
-class _CharacterMediaListState extends State<CharacterMediaList> {
-  List<String> availableLanguages = [];
-  String selectedLanguage = StringConstants.defaultLanguageDropdown;
-
+class _CharacterMediaListState extends State<CharacterMediaList>
+    with LanguageSelectionMixin {
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<CharacterMediaBloc>();
@@ -44,19 +41,10 @@ class _CharacterMediaListState extends State<CharacterMediaList> {
       },
       child: CustomScrollView(
         slivers: [
-          // Language Dropdown
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
             sliver: SliverToBoxAdapter(
-              child: CustomDropdown<String>(
-                dropdownItems: availableLanguages,
-                initialValue: selectedLanguage,
-                onChange: (language) {
-                  setState(() {
-                    selectedLanguage = language;
-                  });
-                },
-              ),
+              child: buildLanguageDropdown(),
             ),
           ),
           // Media Filter Widget
@@ -95,7 +83,7 @@ class _CharacterMediaListState extends State<CharacterMediaList> {
                 List<Query$getCharacterMedia$Character$media$edges?>
                     characters = state.list
                         as List<Query$getCharacterMedia$Character$media$edges?>;
-                loadLanguages(characters);
+                loadLanguagesFromVoiceActors(characters);
 
                 if (characters.isEmpty) {
                   return const SliverToBoxAdapter(
@@ -172,28 +160,5 @@ class _CharacterMediaListState extends State<CharacterMediaList> {
         ],
       ),
     );
-  }
-
-  void loadLanguages(
-    List<Query$getCharacterMedia$Character$media$edges?> characters,
-  ) {
-    final newLanguages = <String>{};
-
-    for (var character in characters) {
-      character?.voiceActorRoles?.forEach(
-        (voiceActorRole) {
-          var language = voiceActorRole!.voiceActor!.languageV2!;
-          newLanguages.add(language);
-        },
-      );
-    }
-
-    if (newLanguages.isNotEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        setState(() {
-          availableLanguages = newLanguages.toList()..sort();
-        });
-      });
-    }
   }
 }

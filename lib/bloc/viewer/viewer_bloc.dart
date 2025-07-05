@@ -12,7 +12,6 @@ import 'package:otaku_world/graphql/__generated/graphql/user/viewer.graphql.dart
 import '../../graphql/__generated/graphql/fragments.graphql.dart';
 
 part 'viewer_event.dart';
-
 part 'viewer_state.dart';
 
 class ViewerBloc extends Bloc<ViewerEvent, ViewerState> {
@@ -171,5 +170,9 @@ class ViewerBloc extends Bloc<ViewerEvent, ViewerState> {
 
   Fragment$Settings getUser() {
     return (state as ViewerLoaded).user;
+  }
+
+  Fragment$Settings? getNullableUser() {
+    return (state is ViewerLoaded) ? (state as ViewerLoaded).user : null;
   }
 }

@@ -3,8 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/activities/message_activity_card.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/placeholders/anime_character_placeholder.dart';
 import 'package:otaku_world/features/social/widgets/activity_shimmer_list.dart';
 import 'package:otaku_world/generated/assets.dart';
@@ -106,13 +106,25 @@ class _ActivitiesListState extends State<ActivitiesList>
                   ),
           );
         } else if (state is ActivitiesError) {
-          return ErrorText(
-              message: state.message,
-              onTryAgain: () {
-                activitiesBloc.add(LoadActivities(client));
-              });
+          return Center(
+            child: AnimeCharacterPlaceholder(
+              asset: Assets.charactersCigaretteGirl,
+              heading: 'Nothing to Show',
+              subheading: 'Looks like there are no activities yet!',
+              isError: true,
+              onTryAgain: () => activitiesBloc.add(LoadActivities(client)),
+            ),
+          );
         } else {
-          return const Text('Unknown State');
+          return Center(
+            child: AnimeCharacterPlaceholder(
+              asset: Assets.charactersCigaretteGirl,
+              heading: 'Nothing to Show',
+              subheading: StringConstants.somethingWentWrongError,
+              isError: true,
+              onTryAgain: () => activitiesBloc.add(LoadActivities(client)),
+            ),
+          );
         }
       },
     );

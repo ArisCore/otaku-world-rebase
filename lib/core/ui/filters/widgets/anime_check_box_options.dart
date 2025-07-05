@@ -10,6 +10,7 @@ class AnimeCheckBoxOptions extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = context.read<FilterAnimeBloc>();
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CustomCheckBox(
           label: 'Hide Anime on My list',

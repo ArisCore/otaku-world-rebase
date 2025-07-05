@@ -6,24 +6,26 @@ import '../../../graphql/__generated/graphql/fragments.graphql.dart';
 import '../../../utils/formatting_utils.dart';
 
 class StatusRow extends StatelessWidget {
-  const StatusRow({super.key, required this.airingSchedule, required this.status, required this.fontSize, required this.alignment,});
+  const StatusRow({
+    super.key,
+    required this.airingSchedule,
+    required this.status,
+    required this.fontSize,
+    required this.alignment,
+    this.mainAxisSize = MainAxisSize.min,
+  });
 
   final MainAxisAlignment alignment;
   final double fontSize;
   final Fragment$MediaShort$airingSchedule? airingSchedule;
   final Enum$MediaStatus? status;
+  final MainAxisSize mainAxisSize;
+
   @override
   Widget build(BuildContext context) {
-
-    if (airingSchedule?.nodes == null) {
-      return StatusText(
-        status: status,
-        fontSize: fontSize,
-      );
-    }
-
-    if (airingSchedule!.nodes!.isNotEmpty) {
+    if (airingSchedule?.nodes != null && airingSchedule!.nodes!.isNotEmpty) {
       return Row(
+        mainAxisSize: mainAxisSize,
         mainAxisAlignment: alignment,
         children: [
           StatusText(
@@ -33,12 +35,17 @@ class StatusRow extends StatelessWidget {
           const SizedBox(
             width: 20,
           ),
-          Text(
-            "Ep. ${airingSchedule!.nodes![0]!.episode}: ${FormattingUtils.formatDurationFromSeconds(airingSchedule!.nodes![0]!.timeUntilAiring)}",
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontFamily: 'Poppins',
-              fontWeight: FontWeight.w500,
-              fontSize: fontSize,
+          SizedBox(
+            width: 99,
+            child: Text(
+              "Ep. ${airingSchedule!.nodes![0]!.episode}: ${FormattingUtils.formatDurationFromSeconds(airingSchedule!.nodes![0]!.timeUntilAiring)}",
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w500,
+                    fontSize: fontSize,
+                  ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],

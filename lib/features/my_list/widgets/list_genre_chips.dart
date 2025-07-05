@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../bloc/filter/collections/genres/genre_cubit.dart';
 import '../../../bloc/graphql_client/graphql_client_cubit.dart';
+import '../../../constants/string_constants.dart';
 import '../../../core/ui/error_text.dart';
 import '../../../core/ui/filters/custom_chips.dart';
 import '../../../core/ui/filters/custom_choice_chip.dart';
@@ -23,10 +24,10 @@ class ListGenreChips extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<GenreCubit, GenreState>(
       builder: (context, state) {
+        final client = (context.read<GraphqlClientCubit>().state
+                as GraphqlClientInitialized)
+            .client;
         if (state is GenreInitial) {
-          final client = (context.read<GraphqlClientCubit>().state
-                  as GraphqlClientInitialized)
-              .client;
           context.read<GenreCubit>().loadAnimeGenre(client);
           return const Center(child: CircularProgressIndicator());
         } else if (state is GenreLoading) {
@@ -47,9 +48,19 @@ class ListGenreChips extends StatelessWidget {
             }).toList(),
           );
         } else if (state is GenreError) {
-          return ErrorText(message: state.message, onTryAgain: () {});
+          return ErrorText(
+            message: state.message,
+            onTryAgain: () {
+              context.read<GenreCubit>().loadAnimeGenre(client);
+            },
+          );
         } else {
-          return const Text('Unknown State');
+          return ErrorText(
+            message: StringConstants.somethingWentWrongError,
+            onTryAgain: () {
+              context.read<GenreCubit>().loadAnimeGenre(client);
+            },
+          );
         }
       },
     );

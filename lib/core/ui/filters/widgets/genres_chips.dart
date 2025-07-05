@@ -6,6 +6,8 @@ import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/filters/custom_chips.dart';
 import 'package:otaku_world/core/ui/filters/custom_choice_chip.dart';
 
+import '../../../../constants/string_constants.dart';
+
 class GenresChips extends StatelessWidget {
   const GenresChips({
     super.key,
@@ -22,10 +24,10 @@ class GenresChips extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<GenreCubit, GenreState>(
       builder: (context, state) {
+        final client = (context.read<GraphqlClientCubit>().state
+                as GraphqlClientInitialized)
+            .client;
         if (state is GenreInitial) {
-          final client = (context.read<GraphqlClientCubit>().state
-                  as GraphqlClientInitialized)
-              .client;
           context.read<GenreCubit>().loadAnimeGenre(client);
           return const Center(child: CircularProgressIndicator());
         } else if (state is GenreLoading) {
@@ -46,9 +48,19 @@ class GenresChips extends StatelessWidget {
             }).toList(),
           );
         } else if (state is GenreError) {
-          return ErrorText(message: state.message, onTryAgain: () {});
+          return ErrorText(
+            message: state.message,
+            onTryAgain: () {
+              context.read<GenreCubit>().loadAnimeGenre(client);
+            },
+          );
         } else {
-          return const Text('Unknown State');
+          return ErrorText(
+            message: StringConstants.somethingWentWrongError,
+            onTryAgain: () {
+              context.read<GenreCubit>().loadAnimeGenre(client);
+            },
+          );
         }
       },
     );

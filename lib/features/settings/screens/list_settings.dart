@@ -96,13 +96,13 @@ class _ListSettingsState extends State<ListSettings> {
                     //       ),
                     //     );
                     context.read<AnimeListBloc>().add(LoadMediaList(
-                      client: client,
-                      loadForSettings: true,
-                    ));
+                          client: client,
+                          loadForSettings: true,
+                        ));
                     context.read<MangaListBloc>().add(LoadMediaList(
-                      client: client,
-                      loadForSettings: true,
-                    ));
+                          client: client,
+                          loadForSettings: true,
+                        ));
                     context.pop();
                   });
                   UIUtils.showSnackBar(context, 'Settings Updated!');
@@ -379,7 +379,12 @@ class _ListSettingsState extends State<ListSettings> {
                   },
                 );
               } else {
-                return const Text('Unknown State');
+                return ErrorText(
+                  message: StringConstants.somethingWentWrongError,
+                  onTryAgain: () {
+                    context.read<ViewerBloc>().add(LoadViewer(client));
+                  },
+                );
               }
             },
           ),
@@ -399,8 +404,8 @@ class _ListSettingsState extends State<ListSettings> {
           onConfirm: () {
             dialogContext.pop();
             context.read<ViewerBloc>().add(
-              UpdateUser(client: client, user: user),
-            );
+                  UpdateUser(client: client, user: user),
+                );
           },
           onCancel: dialogContext.pop,
         );

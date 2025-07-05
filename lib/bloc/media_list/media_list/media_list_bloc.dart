@@ -16,7 +16,6 @@ import 'package:otaku_world/graphql/__generated/graphql/schema.graphql.dart';
 import 'package:otaku_world/utils/formatting_utils.dart';
 
 part 'media_list_event.dart';
-
 part 'media_list_state.dart';
 
 class AnimeListBloc extends MediaListBloc {
@@ -28,8 +27,7 @@ class MangaListBloc extends MediaListBloc {
 }
 
 class MediaListBloc extends Bloc<MediaListEvent, MediaListState> {
-  MediaListBloc({required this.type})
-      : super(MediaListInitial()) {
+  MediaListBloc({required this.type}) : super(MediaListInitial()) {
     filter = type == Enum$MediaType.ANIME
         ? const AnimeFilter(sort: [Enum$MediaSort.UPDATED_AT_DESC])
         : const MangaFilter(sort: [Enum$MediaSort.UPDATED_AT_DESC]);
@@ -352,33 +350,41 @@ class MediaListBloc extends Bloc<MediaListEvent, MediaListState> {
     // Include any custom lists the entry belongs to
     Set<String> targetBuckets = {statusBucket};
 
-    if (event.entry.customLists != null) {
-      final customBuckets = (jsonDecode(event.entry.customLists!) as Map<String, dynamic>).entries.where((e) => e.value).map((e) => e.key);
-      targetBuckets.addAll(customBuckets);
+    if (event.entry.customLists != null && event.entry.customLists!.isNotEmpty) {
+      final decoded = jsonDecode(event.entry.customLists!);
+      if (decoded != null && decoded is Map<String, dynamic>) {
+        final customBuckets = decoded.entries
+            .where((e) => e.value)
+            .map((e) => e.key);
+        targetBuckets.addAll(customBuckets);
+      }
     }
 
     bool foundAny = false;
     // Update master collection: place entry in all target buckets, remove from others
     final updatedLists = _masterCollection.lists?.map((collection) {
-      if (collection == null) return null;
-      final entries = List<Fragment$MediaListEntry?>.of(collection.entries ?? []);
+          if (collection == null) return null;
+          final entries =
+              List<Fragment$MediaListEntry?>.of(collection.entries ?? []);
 
-      if (targetBuckets.contains(collection.name)) {
-        // In a target bucket: update or insert
-        final idx = entries.indexWhere((e) => e?.media?.id == event.entry.mediaId);
-        if (idx != -1) {
-          entries[idx] = event.entry;
-        } else {
-          entries.insert(0, event.entry);
-        }
-        foundAny = true;
-      } else {
-        // Not a target: remove old copies
-        entries.removeWhere((e) => e?.media?.id == event.entry.mediaId);
-      }
+          if (targetBuckets.contains(collection.name)) {
+            // In a target bucket: update or insert
+            final idx =
+                entries.indexWhere((e) => e?.media?.id == event.entry.mediaId);
+            if (idx != -1) {
+              entries[idx] = event.entry;
+            } else {
+              entries.insert(0, event.entry);
+            }
+            foundAny = true;
+          } else {
+            // Not a target: remove old copies
+            entries.removeWhere((e) => e?.media?.id == event.entry.mediaId);
+          }
 
-      return collection.copyWith(entries: entries);
-    }).toList() ?? [];
+          return collection.copyWith(entries: entries);
+        }).toList() ??
+        [];
 
     // For any custom bucket not in the original lists, create new one
     for (var bucket in targetBuckets) {

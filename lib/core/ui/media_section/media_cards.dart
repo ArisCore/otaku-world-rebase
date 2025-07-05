@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:otaku_world/bloc/paginated_data/paginated_data_bloc.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/media_section/media_card.dart';
 import 'package:otaku_world/theme/colors.dart';
 import 'package:otaku_world/utils/formatting_utils.dart';
@@ -125,7 +126,15 @@ class MediaCards<B extends PaginatedDataBloc> extends HookWidget {
                 },
               );
             } else {
-              return const Text('Unknown State');
+              return ErrorText(
+                message: StringConstants.somethingWentWrongError,
+                onTryAgain: () {
+                  final client = (context.read<GraphqlClientCubit>().state
+                  as GraphqlClientInitialized)
+                      .client;
+                  context.read<B>().add(LoadData(client));
+                },
+              );
             }
           },
         ),

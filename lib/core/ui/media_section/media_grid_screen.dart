@@ -16,10 +16,11 @@ import 'package:otaku_world/utils/formatting_utils.dart';
 
 import '../../../bloc/graphql_client/graphql_client_cubit.dart';
 import '../../../bloc/paginated_data/paginated_data_bloc.dart';
+import '../../../constants/string_constants.dart';
 import '../../../generated/assets.dart';
 import '../../../graphql/__generated/graphql/schema.graphql.dart';
 import '../../../utils/navigation_helper.dart';
-import '../error_text.dart';
+import '../placeholders/anime_character_placeholder.dart';
 
 class MediaGridScreen<B extends PaginatedDataBloc> extends HookWidget {
   const MediaGridScreen({
@@ -120,26 +121,47 @@ class MediaGridScreen<B extends PaginatedDataBloc> extends HookWidget {
               ],
             );
           } else if (state is PaginatedDataError) {
-            return Center(
-              child: ErrorText(
-                message: state.message,
-                onTryAgain: () {
-                  final client = (context.read<GraphqlClientCubit>().state
-                          as GraphqlClientInitialized)
-                      .client;
-                  context.read<B>().add(
-                        LoadData(client),
-                      );
-                },
-              ),
+            return _buildErrorScaffold(
+              message: state.message,
+              context: context,
+            );
+          } else {
+            return _buildErrorScaffold(
+              message: StringConstants.somethingWentWrongError,
+              context: context,
             );
           }
-          return const Text('Unknown State');
         },
       ),
       floatingActionButton: ScrollToTopFAB(
         controller: scrollController,
         tag: '',
+      ),
+    );
+  }
+
+  Widget _buildErrorScaffold({
+    required String message,
+    required BuildContext context,
+  }) {
+    return Scaffold(
+      appBar: SimpleAppBar(title: appbarTitle),
+      body: Center(
+        child: AnimeCharacterPlaceholder(
+          height: 300,
+          asset: Assets.charactersCigaretteGirl,
+          subheading: message,
+          isScrollable: true,
+          isError: true,
+          onTryAgain: () {
+            final bloc = context.read<B>();
+            final client = (context.read<GraphqlClientCubit>().state
+                    as GraphqlClientInitialized)
+                .client;
+
+            bloc.add(LoadData(client));
+          },
+        ),
       ),
     );
   }
@@ -251,7 +273,7 @@ class MediaGridScreen<B extends PaginatedDataBloc> extends HookWidget {
         vertical: 3,
       ),
       decoration: ShapeDecoration(
-        color: AppColors.raisinBlack.withValues(alpha:0.6),
+        color: AppColors.raisinBlack.withValues(alpha: 0.6),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(5),

@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:otaku_world/bloc/paginated_data/paginated_data_bloc.dart';
 import 'package:otaku_world/bloc/profile/user_notifications/user_notifications_bloc.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/placeholders/anime_character_placeholder.dart';
 import 'package:otaku_world/features/profile/widgets/notifications/notification_card.dart';
 import 'package:otaku_world/features/profile/widgets/shimmers/notifications_shimmer.dart';
@@ -37,8 +38,7 @@ class _UserNotificationsScreenState extends State<UserNotificationsScreen> {
     final client = context.read<GraphqlClientCubit>().getClient()!;
 
     return BlocProvider(
-      create: (context) =>
-      UserNotificationsBloc()
+      create: (context) => UserNotificationsBloc()
         ..add(
           LoadData(client),
         ),
@@ -83,8 +83,8 @@ class _UserNotificationsScreenState extends State<UserNotificationsScreen> {
                   onRefresh: () {
                     return Future.delayed(const Duration(seconds: 2), () {
                       context.read<UserNotificationsBloc>().add(
-                        RefreshData(client),
-                      );
+                            RefreshData(client),
+                          );
                     });
                   },
                   child: CustomScrollView(
@@ -107,34 +107,34 @@ class _UserNotificationsScreenState extends State<UserNotificationsScreen> {
                       ),
                       state.list.isEmpty
                           ? const SliverToBoxAdapter(
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 50,
-                          ),
-                          child: AnimeCharacterPlaceholder(
-                            asset: Assets.charactersChillBoy,
-                            heading: 'No Notifications to Show',
-                            subheading:
-                            'New notifications will be displayed here when they arrive.',
-                          ),
-                        ),
-                      )
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 50,
+                                ),
+                                child: AnimeCharacterPlaceholder(
+                                  asset: Assets.charactersChillBoy,
+                                  heading: 'No Notifications to Show',
+                                  subheading:
+                                      'New notifications will be displayed here when they arrive.',
+                                ),
+                              ),
+                            )
                           : SliverList.builder(
-                        itemCount: state.list.length,
-                        itemBuilder: (context, index) {
-                          final bloc =
-                          context.read<UserNotificationsBloc>();
-                          if (index == state.list.length - 1 &&
-                              state.hasNextPage) {
-                            bloc.add(LoadData(client));
-                          }
+                              itemCount: state.list.length,
+                              itemBuilder: (context, index) {
+                                final bloc =
+                                    context.read<UserNotificationsBloc>();
+                                if (index == state.list.length - 1 &&
+                                    state.hasNextPage) {
+                                  bloc.add(LoadData(client));
+                                }
 
-                          return NotificationCard(
-                            notification: state.list[index],
-                          );
-                        },
-                      ),
+                                return NotificationCard(
+                                  notification: state.list[index],
+                                );
+                              },
+                            ),
                       if (state.hasNextPage)
                         const SliverToBoxAdapter(
                           child: Padding(
@@ -154,7 +154,12 @@ class _UserNotificationsScreenState extends State<UserNotificationsScreen> {
                 },
               );
             } else {
-              return const Text('Unknown State');
+              return _buildErrorScaffold(
+                message: StringConstants.somethingWentWrongError,
+                onPressed: () {
+                  context.read<UserNotificationsBloc>().add(LoadData(client));
+                },
+              );
             }
           },
         ),
@@ -271,8 +276,8 @@ class _UserNotificationsScreenState extends State<UserNotificationsScreen> {
     if (filter == option) return;
     filter = option;
     context.read<UserNotificationsBloc>().setNotificationType(
-      client: client,
-      type: option,
-    );
+          client: client,
+          type: option,
+        );
   }
 }

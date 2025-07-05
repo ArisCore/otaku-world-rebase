@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-
 class GenreText extends StatelessWidget {
   const GenreText({
     super.key,
@@ -42,7 +41,7 @@ class GenreText extends StatelessWidget {
         children: textSpans,
       ),
       maxLines: 2,
-      overflow: TextOverflow.clip,
+      overflow: TextOverflow.ellipsis,
       textAlign: TextAlign.center,
     );
   }

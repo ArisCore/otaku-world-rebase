@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:otaku_world/bloc/search/search_bloc/search_bloc.dart';
 import 'package:otaku_world/bloc/search/search_users/search_users_bloc.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/features/search/widgets/user_card.dart';
 import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 
@@ -51,6 +51,8 @@ class ResultUsersList extends HookWidget {
       child: BlocBuilder<SearchUsersBloc, SearchBaseState>(
         bloc: searchUsersBloc as SearchUsersBloc,
         builder: (context, state) {
+          final client = (context.read<GraphqlClientCubit>()).getClient();
+
           if (state is SearchInitial) {
             return const AnimeCharacterPlaceholder(
               asset: Assets.charactersSchoolGirl,
@@ -63,8 +65,6 @@ class ResultUsersList extends HookWidget {
             return const Center(
               child: CircularProgressIndicator(),
             );
-          } else if (state is SearchError) {
-            return ErrorText(message: state.message, onTryAgain: () {});
           } else if (state is SearchResultLoaded<Fragment$SearchResultUser?>) {
             final list = state.list;
             final hasNextPage = state.hasNextPage;
@@ -99,8 +99,23 @@ class ResultUsersList extends HookWidget {
                         ),
                     ],
                   );
+          } else if (state is SearchError) {
+            return AnimeCharacterPlaceholder(
+              asset: Assets.charactersSchoolGirl,
+              height: 300,
+              heading: StringConstants.somethingWentWrong,
+              subheading: state.message,
+              isScrollable: true,
+            );
           } else {
-            return const Text('Unknown State');
+            return const Center(
+              child: AnimeCharacterPlaceholder(
+                height: 300,
+                asset: Assets.charactersCigaretteGirl,
+                subheading: StringConstants.somethingWentWrongError,
+                isScrollable: true,
+              ),
+            );
           }
         },
       ),

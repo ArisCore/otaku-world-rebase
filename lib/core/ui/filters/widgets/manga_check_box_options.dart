@@ -10,6 +10,7 @@ class MangaCheckBoxOptions extends StatelessWidget {
   Widget build(BuildContext context) {
     final bloc = context.read<FilterMangaBloc>();
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CustomCheckBox(
           label: 'Hide Manga on My list',

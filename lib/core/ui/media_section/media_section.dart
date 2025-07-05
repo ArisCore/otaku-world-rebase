@@ -4,6 +4,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
 import 'package:otaku_world/bloc/paginated_data/paginated_data_bloc.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/images/cover_image.dart';
 import 'package:otaku_world/core/ui/list_progress_indicator.dart';
@@ -136,7 +137,13 @@ class MediaSection<B extends PaginatedDataBloc> extends HookWidget {
             },
           );
         } else {
-          return const Text('Unknown State');
+          return ErrorText(
+            message: StringConstants.somethingWentWrongError,
+            onTryAgain: () {
+              final client = context.read<GraphqlClientCubit>().getClient()!;
+              context.read<B>().add(LoadData(client));
+            },
+          );
         }
       },
     );
@@ -326,7 +333,7 @@ class MediaSection<B extends PaginatedDataBloc> extends HookWidget {
         vertical: 3,
       ),
       decoration: ShapeDecoration(
-        color: AppColors.raisinBlack.withValues(alpha:0.6),
+        color: AppColors.raisinBlack.withValues(alpha: 0.6),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(5),

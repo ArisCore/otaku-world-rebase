@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/appbars/simple_app_bar.dart';
 import 'package:otaku_world/graphql/__generated/graphql/schema.graphql.dart';
 import 'package:otaku_world/theme/colors.dart';
@@ -10,7 +11,8 @@ import 'package:otaku_world/theme/colors.dart';
 import '../../../bloc/graphql_client/graphql_client_cubit.dart';
 import '../../../bloc/viewer/viewer_bloc.dart';
 import '../../../core/ui/buttons/primary_button.dart';
-import '../../../core/ui/error_text.dart';
+import '../../../core/ui/placeholders/anime_character_placeholder.dart';
+import '../../../generated/assets.dart';
 import '../../../graphql/__generated/graphql/fragments.graphql.dart';
 import '../../../utils/ui_utils.dart';
 
@@ -265,16 +267,39 @@ class _NotificationsSettingsScreenState
               ),
             );
           } else if (state is ViewerError) {
-            return ErrorText(
+            return _buildErrorWidget(
               message: state.message,
-              onTryAgain: () {
-                context.read<ViewerBloc>().add(LoadViewer(client));
-              },
+              context: context,
             );
           } else {
-            return const Text('Unknown State');
+            return _buildErrorWidget(
+              message: StringConstants.somethingWentWrongError,
+              context: context,
+            );
           }
         },
+      ),
+    );
+  }
+
+  Widget _buildErrorWidget({
+    required String message,
+    required BuildContext context,
+  }) {
+    return Center(
+      child: AnimeCharacterPlaceholder(
+        asset: Assets.charactersCigaretteGirl,
+        height: 300,
+        subheading: message,
+        onTryAgain: () {
+          final bloc = context.read<ViewerBloc>();
+          final client = context.read<GraphqlClientCubit>().getClient();
+          if (client != null) {
+            bloc.add(LoadViewer(client));
+          }
+        },
+        isError: true,
+        isScrollable: true,
       ),
     );
   }

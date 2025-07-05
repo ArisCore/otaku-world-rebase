@@ -7,13 +7,15 @@ import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
 import 'package:otaku_world/bloc/viewer/viewer_bloc.dart';
 import 'package:otaku_world/constants/settings_constants.dart';
 import 'package:otaku_world/core/ui/appbars/simple_app_bar.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/filters/custom_check_box.dart';
 import 'package:otaku_world/core/ui/filters/custom_dropdown.dart';
 import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 import 'package:otaku_world/utils/ui_utils.dart';
 
+import '../../../constants/string_constants.dart';
 import '../../../core/ui/buttons/primary_button.dart';
+import '../../../core/ui/placeholders/anime_character_placeholder.dart';
+import '../../../generated/assets.dart';
 
 class AnimeMangaSettingsScreen extends StatefulWidget {
   const AnimeMangaSettingsScreen({super.key});
@@ -116,6 +118,7 @@ class _AnimeMangaSettingsScreenState extends State<AnimeMangaSettingsScreen> {
                   vertical: 10,
                 ),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomDropdown(
                       title: 'Title Language',
@@ -212,14 +215,31 @@ class _AnimeMangaSettingsScreenState extends State<AnimeMangaSettingsScreen> {
               ),
             );
           } else if (state is ViewerError) {
-            return ErrorText(
-              message: state.message,
-              onTryAgain: () {
-                context.read<ViewerBloc>().add(LoadViewer(client));
-              },
+            return Center(
+              child: AnimeCharacterPlaceholder(
+                asset: Assets.charactersChillBoy,
+                height: 300,
+                subheading: state.message,
+                onTryAgain: () {
+                  context.read<ViewerBloc>().add(LoadViewer(client));
+                },
+                isError: true,
+                isScrollable: true,
+              ),
             );
           } else {
-            return const Text('Unknown State');
+            return Center(
+              child: AnimeCharacterPlaceholder(
+                asset: Assets.charactersNoInternet,
+                height: 300,
+                subheading: StringConstants.somethingWentWrongError,
+                onTryAgain: () {
+                  context.read<ViewerBloc>().add(LoadViewer(client));
+                },
+                isError: true,
+                isScrollable: true,
+              ),
+            );
           }
         },
       ),

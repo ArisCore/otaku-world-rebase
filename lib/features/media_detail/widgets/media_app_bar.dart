@@ -209,14 +209,14 @@ class _MediaAppBarState extends State<MediaAppBar> {
                           onTap: () => media.coverImage?.extraLarge != null
                               ? showImage(
                                   context,
-                                  media.coverImage!.extraLarge.toString(),
-                                  tag: media.coverImage!.extraLarge.toString(),
+                                  media.coverImage!.extraLarge!,
+                                  tag: media.coverImage!.extraLarge!,
                                 )
                               : null,
                           child: Hero(
-                            tag: media.coverImage!.extraLarge.toString(),
+                            tag: media.coverImage!.extraLarge!,
                             child: CoverImage(
-                              imageUrl: media.coverImage!.extraLarge.toString(),
+                              imageUrl: media.coverImage!.extraLarge!,
                               type: media.type!,
                               // placeHolderName: Assets.placeholders210x310,
                             ),
@@ -280,15 +280,9 @@ class _MediaAppBarState extends State<MediaAppBar> {
             status: media.status,
             fontSize: 14,
             alignment: MainAxisAlignment.spaceBetween,
+            mainAxisSize: MainAxisSize.max,
           ),
         ),
-        // CustomTabBar(
-        //   controller: tabController,
-        //   tabs: tabs,
-        // ),
-        // const SizedBox(
-        //   height: 10,
-        // ),
       ],
     );
   }

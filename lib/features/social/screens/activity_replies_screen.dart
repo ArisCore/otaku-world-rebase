@@ -13,6 +13,7 @@ import 'package:otaku_world/bloc/social/activities/activities_bloc.dart';
 import 'package:otaku_world/bloc/social/activity/activity_bloc.dart';
 import 'package:otaku_world/bloc/social/activity_replies/activity_replies_bloc.dart';
 import 'package:otaku_world/config/router/router_constants.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/activities/activity_reply_card.dart';
 import 'package:otaku_world/core/ui/buttons/primary_fab.dart';
 import 'package:otaku_world/core/ui/placeholders/anime_character_placeholder.dart';
@@ -23,7 +24,6 @@ import 'package:otaku_world/theme/colors.dart';
 
 import '../../../core/ui/appbars/simple_app_bar.dart';
 import '../../../core/ui/appbars/simple_sliver_app_bar.dart';
-import '../../../core/ui/error_text.dart';
 
 class ActivityRepliesScreen extends HookWidget {
   const ActivityRepliesScreen({super.key, required this.bloc});
@@ -72,9 +72,9 @@ class ActivityRepliesScreen extends HookWidget {
             barrierDismissible: false,
             useRootNavigator: true,
             builder: (context) {
-              return WillPopScope(
-                onWillPop: () async => false,
-                child: const Center(
+              return const PopScope(
+                canPop: false,
+                child: Center(
                   child: CircularProgressIndicator(),
                 ),
               );
@@ -204,14 +204,15 @@ class ActivityRepliesScreen extends HookWidget {
             ),
           );
         } else if (state is PaginatedDataError) {
-          return _buildErrorScaffold(state.message, () {
-            final client = (context.read<GraphqlClientCubit>().state
-                    as GraphqlClientInitialized)
-                .client;
-            activityRepliesBloc.add(LoadData(client));
-          });
+          return _buildErrorScaffold(
+            state.message,
+            context,
+          );
         } else {
-          return const Text('Unknown State');
+          return _buildErrorScaffold(
+            StringConstants.somethingWentWrongError,
+            context,
+          );
         }
       },
     );
@@ -225,15 +226,25 @@ class ActivityRepliesScreen extends HookWidget {
     bloc.add(RefreshData(client));
   }
 
-  Widget _buildErrorScaffold(String message, VoidCallback onTryAgain) {
+  Widget _buildErrorScaffold(String message, BuildContext context) {
     return Scaffold(
       appBar: const SimpleAppBar(
         title: 'Replies',
       ),
       body: Center(
-        child: ErrorText(
-          message: message,
-          onTryAgain: onTryAgain,
+        child: AnimeCharacterPlaceholder(
+          asset: Assets.charactersCigaretteGirl,
+          height: 300,
+          subheading: message,
+          onTryAgain: () {
+            final bloc = context.read<ActivityRepliesBloc>();
+            final client = context.read<GraphqlClientCubit>().getClient();
+            if (client != null) {
+              bloc.add(LoadData(client));
+            }
+          },
+          isError: true,
+          isScrollable: true,
         ),
       ),
     );

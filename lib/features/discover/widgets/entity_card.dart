@@ -37,8 +37,6 @@ class EntityCard extends StatelessWidget {
                   width: 115,
                   child: AspectRatio(
                     aspectRatio: 100 / 150,
-                    // height: 169,
-                    // width: 115,
                     child: CoverImage(
                       imageUrl: imageUrl ?? '',
                       type: Enum$MediaType.ANIME,

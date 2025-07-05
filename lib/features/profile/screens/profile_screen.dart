@@ -117,7 +117,12 @@ class ProfileScreen extends HookWidget {
               },
             );
           } else {
-            return const Text('Unknown State');
+            return _buildErrorScaffold(
+              message: StringConstants.somethingWentWrongError,
+              onPressed: () {
+                profileBloc.add(LoadProfile(client!));
+              },
+            );
           }
         },
       ),

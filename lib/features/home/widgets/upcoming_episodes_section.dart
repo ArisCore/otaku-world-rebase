@@ -8,6 +8,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import '../../../bloc/graphql_client/graphql_client_cubit.dart';
 import '../../../bloc/paginated_data/paginated_data_bloc.dart';
 import '../../../bloc/upcoming_episodes/upcoming_episodes_bloc.dart';
+import '../../../constants/string_constants.dart';
 import '../../../core/ui/error_text.dart';
 import '../../../core/ui/media_section/scroll_to_left_button.dart';
 import '../../../core/ui/placeholders/poster_placeholder.dart';
@@ -93,17 +94,26 @@ class UpcomingEpisodesSection extends HookWidget {
                 ),
               ],
             );
-          } else if (state is PaginatedDataError) {
+          }else if (state is PaginatedDataError) {
             return ErrorText(
-                message: state.message,
-                onTryAgain: () {
-                  final client = (context.read<GraphqlClientCubit>().state
-                          as GraphqlClientInitialized)
-                      .client;
+              message: state.message,
+              onTryAgain: () {
+                final client = context.read<GraphqlClientCubit>().getClient();
+                if (client != null) {
                   context.read<UpcomingEpisodesBloc>().add(LoadData(client));
-                });
+                }
+              },
+            );
           } else {
-            return const Text('Unknown State');
+            return ErrorText(
+              message: StringConstants.somethingWentWrongError,
+              onTryAgain: () {
+                final client = context.read<GraphqlClientCubit>().getClient();
+                if (client != null) {
+                  context.read<UpcomingEpisodesBloc>().add(LoadData(client));
+                }
+              },
+            );
           }
         },
       ),

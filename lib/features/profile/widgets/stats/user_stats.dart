@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
 import 'package:otaku_world/bloc/profile/user_stats/user_stats_bloc.dart';
 import 'package:otaku_world/constants/filter_constants.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/filters/custom_dropdown.dart';
 import 'package:otaku_world/features/profile/widgets/stats/genre/genre_stats.dart';
@@ -137,7 +138,10 @@ class _UserStatsState extends State<UserStats> {
               onTryAgain: () {},
             );
           } else {
-            return const Text('Unknown State');
+            return ErrorText(
+              message: StringConstants.somethingWentWrongError,
+              onTryAgain: () {},
+            );
           }
         },
       ),

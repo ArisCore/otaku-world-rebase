@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:otaku_world/bloc/filter/collections/external_links/manga/manga_platforms_cubit.dart';
 import 'package:otaku_world/bloc/filter/filter_manga/filter_manga_bloc.dart';
 import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
@@ -17,11 +18,14 @@ class MangaPlatformsChips extends StatelessWidget {
     final bloc = context.read<FilterMangaBloc>();
     return BlocBuilder<MangaPlatformsCubit, MangaPlatformsState>(
       builder: (context, state) {
+        final client = (context.read<GraphqlClientCubit>().state
+                as GraphqlClientInitialized)
+            .client;
         if (state is MangaPlatformsInitial) {
-          final client = (context.read<GraphqlClientCubit>().state
-                  as GraphqlClientInitialized)
-              .client;
-          context.read<MangaPlatformsCubit>().loadMangaPlatforms(client);
+          loadPublishingOnChips(
+            context,
+            client,
+          );
           return const Center(child: CircularProgressIndicator());
         } else if (state is MangaPlatformsLoading) {
           return const Center(child: CircularProgressIndicator());
@@ -45,11 +49,30 @@ class MangaPlatformsChips extends StatelessWidget {
             }).toList(),
           );
         } else if (state is MangaPlatformsError) {
-          return ErrorText(message: state.message, onTryAgain: () {});
+          return ErrorText(
+            message: state.message,
+            onTryAgain: () {
+              loadPublishingOnChips(
+                context,
+                client,
+              );
+            },
+          );
         } else {
-          return const Text('Unknown State');
+          return ErrorText(
+            onTryAgain: () {
+              loadPublishingOnChips(
+                context,
+                client,
+              );
+            },
+          );
         }
       },
     );
+  }
+
+  void loadPublishingOnChips(BuildContext context, GraphQLClient client) {
+    context.read<MangaPlatformsCubit>().loadMangaPlatforms(client);
   }
 }

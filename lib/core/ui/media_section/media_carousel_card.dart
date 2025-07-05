@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/texts/genre_text.dart';
+import 'package:otaku_world/features/media_detail/widgets/status_row.dart';
 import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 
+import '../../../features/media_detail/widgets/info_data.dart';
 import '../../../generated/assets.dart';
 import '../../../graphql/__generated/graphql/schema.graphql.dart';
 import '../../../services/caching/image_cache_manager.dart';
@@ -34,7 +37,6 @@ class MediaCarouselCard extends StatelessWidget {
 
     return Container(
       width: width,
-      // height: 650,
       decoration: ShapeDecoration(
         shape: RoundedRectangleBorder(
           borderRadius: media!.type == Enum$MediaType.ANIME
@@ -82,35 +84,25 @@ class MediaCarouselCard extends StatelessWidget {
                       maxLines: 3,
                     ),
                     const SizedBox(height: 15),
-                    Row(
+                    InfoData(
+                      iconName: Assets.iconsFavourite,
+                      separateWidth: 3,
+                      info: media!.favourites.toString(),
                       mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset(Assets.iconsFavourite),
-                        const SizedBox(
-                          width: 3,
-                        ),
-                        Text(
-                          media!.favourites == null
-                              ? '0'
-                              : media!.favourites.toString(),
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium
-                              ?.copyWith(
-                                fontFamily: 'Poppins',
-                                fontWeight: FontWeight.w500,
-                              ),
-                        ),
-                      ],
                     ),
                     const SizedBox(height: 15),
-                    _buildStatusRow(context, media!),
+                    StatusRow(
+                      airingSchedule: media!.airingSchedule,
+                      status: media!.status,
+                      fontSize: 12,
+                      alignment: MainAxisAlignment.center,
+                    ),
                     const SizedBox(height: 15),
                     GenreText(
                       genres: media!.genres,
                       genreStyle:
                           Theme.of(context).textTheme.titleLarge?.copyWith(
-                                color: AppColors.white.withValues(alpha:0.7),
+                                color: AppColors.white.withValues(alpha: 0.7),
                                 fontWeight: FontWeight.w500,
                                 fontFamily: 'Poppins',
                               ),
@@ -180,55 +172,51 @@ class MediaCarouselCard extends StatelessWidget {
   }
 
   Widget _buildMediaDetails(BuildContext context, Fragment$MediaShort media) {
-    if (media.type == Enum$MediaType.ANIME) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildMediaDetail(
-            context,
-            FormattingUtils.getMediaFormatString(media.format ?? Enum$MediaFormat.$unknown),
-            (media.episodes == null) ? '? ep' : '${media.episodes} ep',
-          ),
-          SvgPicture.asset(Assets.iconsLineVertical),
-          _buildMediaDetail(
-            context,
-            '${media.meanScore}%',
-            'score',
-          ),
-          SvgPicture.asset(Assets.iconsLineVertical),
-          _buildMediaDetail(
-            context,
-            '${FormattingUtils.getSeasonString(media.season)} ${media.seasonYear}',
-            'season',
-          ),
-        ],
-      );
-    } else if (media.type == Enum$MediaType.MANGA) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          _buildMediaDetail(
-            context,
-            FormattingUtils.getMediaFormatString(media.format!),
-            (media.chapters == null) ? '? chap' : '${media.chapters} chap',
-          ),
-          SvgPicture.asset(Assets.iconsLineVertical),
-          _buildMediaDetail(
-            context,
-            '${media.meanScore}%',
-            'score',
-          ),
-          SvgPicture.asset(Assets.iconsLineVertical),
-          _buildMediaDetail(
-            context,
-            (media.startDate == null) ? '?' : '${media.startDate!.year}',
-            'start year',
-          ),
-        ],
-      );
+    String mediaFormatEpChap = '';
+    String mediaStartYear = '';
+    String mediaStartYearLabel = '';
+    if (media.type == Enum$MediaType.MANGA) {
+      mediaFormatEpChap = (media.chapters == null)
+          ? '${StringConstants.nullStringPlaceHolder}chap'
+          : '${media.chapters} chap';
+
+      mediaStartYear =
+          (media.startDate == null) ? '?' : '${media.startDate!.year}';
+      mediaStartYearLabel = 'start year';
+    } else {
+      mediaFormatEpChap = (media.episodes == null)
+          ? '${StringConstants.nullStringPlaceHolder}ep'
+          : '${media.episodes} ep';
+
+      mediaStartYear =
+          '${FormattingUtils.getSeasonString(media.season)} ${media.seasonYear ?? StringConstants.nullStringPlaceHolder}';
+      mediaStartYearLabel = 'season';
     }
 
-    return const SizedBox();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildMediaDetail(
+          context,
+          FormattingUtils.getMediaFormatString(media.format),
+          mediaFormatEpChap,
+        ),
+        if (media.meanScore != null) ...[
+          SvgPicture.asset(Assets.iconsLineVertical),
+          _buildMediaDetail(
+            context,
+            '${media.meanScore}%',
+            'score',
+          ),
+        ],
+        SvgPicture.asset(Assets.iconsLineVertical),
+        _buildMediaDetail(
+          context,
+          mediaStartYear,
+          mediaStartYearLabel,
+        ),
+      ],
+    );
   }
 
   Widget _buildMediaDetail(BuildContext context, String text, String subtext) {
@@ -246,96 +234,11 @@ class MediaCarouselCard extends StatelessWidget {
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w500,
-                color: AppColors.white.withValues(alpha:0.5),
+                color: AppColors.white.withValues(alpha: 0.5),
               ),
         ),
       ],
     );
-  }
-
-  Widget _buildStatusRow(BuildContext context, Fragment$MediaShort media) {
-    if (media.airingSchedule?.nodes == null) {
-      return getStatus(context, media.status);
-    }
-
-    if (media.airingSchedule!.nodes!.isNotEmpty) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          getStatus(context, media.status),
-          const SizedBox(width: 20),
-          Text(
-            "Ep. ${media.airingSchedule!.nodes![0]!.episode}: ${FormattingUtils.formatDurationFromSeconds(media.airingSchedule!.nodes![0]!.timeUntilAiring)}",
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-        ],
-      );
-    } else {
-      return getStatus(context, media.status);
-    }
-  }
-
-  Text getStatus(BuildContext context, Enum$MediaStatus? status) {
-    TextStyle? style = Theme.of(context).textTheme.titleLarge?.copyWith(
-          fontFamily: 'Poppins',
-        );
-
-    if (status == null) {
-      return Text(
-        'Unknown',
-        style: style?.copyWith(
-          color: AppColors.bronze,
-        ),
-      );
-    }
-
-    switch (status) {
-      case Enum$MediaStatus.RELEASING:
-        return Text(
-          'Airing',
-          style: style?.copyWith(
-            color: AppColors.kiwi,
-          ),
-        );
-      case Enum$MediaStatus.FINISHED:
-        return Text(
-          'Finished',
-          style: style?.copyWith(
-            color: AppColors.crayola,
-          ),
-        );
-      case Enum$MediaStatus.NOT_YET_RELEASED:
-        return Text(
-          'Not yet Released',
-          style: style?.copyWith(
-            color: AppColors.chineseWhite,
-          ),
-        );
-      case Enum$MediaStatus.CANCELLED:
-        return Text(
-          'Cancelled',
-          style: style?.copyWith(
-            color: AppColors.maxRed,
-          ),
-        );
-      case Enum$MediaStatus.HIATUS:
-        return Text(
-          'Hiatus',
-          style: style?.copyWith(
-            color: AppColors.silver,
-          ),
-        );
-      default:
-        return Text(
-          'Unknown',
-          style: style?.copyWith(
-            color: AppColors.lightSilver,
-          ),
-        );
-    }
   }
 
   Widget _buildMediaPoster(String? imageUrl, Enum$MediaType type) {

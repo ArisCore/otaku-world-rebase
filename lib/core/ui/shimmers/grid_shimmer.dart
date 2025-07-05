@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:otaku_world/graphql/__generated/graphql/schema.graphql.dart';
 import 'package:otaku_world/utils/ui_utils.dart';
 import 'package:shimmer_animation/shimmer_animation.dart';
+
 import '../../../theme/colors.dart';
 
 class GridShimmer extends StatelessWidget {
@@ -65,10 +66,10 @@ class GridShimmer extends StatelessWidget {
         );
       },
       itemCount: 24,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 150,
         crossAxisSpacing: 10,
         mainAxisSpacing: 10,
-        crossAxisCount: crossAxisCount,
         childAspectRatio: 100 / 182,
       ),
     );

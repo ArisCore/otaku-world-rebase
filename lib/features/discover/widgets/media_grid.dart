@@ -22,8 +22,8 @@ class MediaGrid extends StatelessWidget {
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 0),
           sliver: SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+            gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 150,
               childAspectRatio: 0.5556,
             ),
             // const SliverGridDelegateWithMaxCrossAxisExtent(

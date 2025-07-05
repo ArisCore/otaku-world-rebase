@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:otaku_world/bloc/charcter_detail/media/character_media_bloc.dart';
-import 'package:otaku_world/core/ui/filters/custom_dropdown.dart';
+import 'package:otaku_world/core/ui/widgets/language_selection_mixin.dart';
 import 'package:otaku_world/core/ui/widgets/media_filter_widget.dart';
 import 'package:otaku_world/features/character_detail/widgets/character_media_card.dart';
 import 'package:otaku_world/utils/extensions.dart';
 
 import '../../../bloc/graphql_client/graphql_client_cubit.dart';
 import '../../../bloc/paginated_data/paginated_data_bloc.dart';
-import '../../../constants/string_constants.dart';
 import '../../../core/ui/placeholders/anime_character_placeholder.dart';
 import '../../../core/ui/shimmers/detail_screens/list/character_list_shimmer.dart';
 import '../../../generated/assets.dart';
@@ -22,31 +21,19 @@ class CharacterMediaShortList extends StatefulWidget {
       _CharacterMediaShortListState();
 }
 
-class _CharacterMediaShortListState extends State<CharacterMediaShortList> {
-  List<String> availableLanguages = [];
-  String selectedLanguage = StringConstants.defaultLanguageDropdown;
-
+class _CharacterMediaShortListState extends State<CharacterMediaShortList>
+    with LanguageSelectionMixin {
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<CharacterMediaBloc>();
     return SliverMainAxisGroup(
       slivers: [
-        if (availableLanguages.isNotEmpty) ...[
-          SliverToBoxAdapter(
-            child: CustomDropdown(
-              dropdownItems: availableLanguages,
-              initialValue: selectedLanguage,
-              onChange: (language) {
-                setState(() {
-                  selectedLanguage = language;
-                });
-              },
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: 10.height,
-          ),
-        ],
+        SliverToBoxAdapter(
+          child: buildLanguageDropdown(),
+        ),
+        SliverToBoxAdapter(
+          child: 10.height,
+        ),
         SliverToBoxAdapter(
           child: MediaFilterWidget(
             mediaSortNotifier: bloc.mediaSortNotifier,
@@ -72,15 +59,15 @@ class _CharacterMediaShortListState extends State<CharacterMediaShortList> {
               List<Query$getCharacterMedia$Character$media$edges?> characters =
                   state.list
                       as List<Query$getCharacterMedia$Character$media$edges?>;
-              loadLanguages(characters);
+              loadLanguagesFromVoiceActors(characters);
 
               if (characters.isEmpty) {
                 return const SliverToBoxAdapter(
                   child: AnimeCharacterPlaceholder(
                     asset: Assets.charactersErenYeager,
-                    heading: 'No Characters Available',
+                    heading: 'No Anime/Manga Available',
                     subheading:
-                        'Looks like there aren’t any characters to display right now.',
+                        'Looks like there aren’t any Anime/Manga to display right now.',
                     isScrollable: true,
                   ),
                 );
@@ -133,22 +120,6 @@ class _CharacterMediaShortListState extends State<CharacterMediaShortList> {
         ),
       ],
     );
-  }
-
-  void loadLanguages(
-      List<Query$getCharacterMedia$Character$media$edges?> characters) {
-    for (var character in characters) {
-      character?.voiceActorRoles?.forEach(
-        (voiceActorRole) {
-          var language = voiceActorRole!.voiceActor!.languageV2!;
-          if (!availableLanguages.contains(language)) {
-            availableLanguages.add(language);
-          }
-        },
-      );
-    }
-
-    availableLanguages.sort();
   }
 
   Widget _buildListLoading() {

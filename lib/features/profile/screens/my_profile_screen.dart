@@ -8,7 +8,6 @@ import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
 import 'package:otaku_world/bloc/profile/my_profile/my_profile_bloc.dart';
 import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/appbars/simple_app_bar.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/features/profile/widgets/keep_alive_tab.dart';
 import 'package:otaku_world/features/profile/widgets/my_profile_app_bar.dart';
 import 'package:otaku_world/features/profile/widgets/stats/user_stats.dart';
@@ -17,6 +16,9 @@ import 'package:otaku_world/features/profile/widgets/user_overview.dart';
 import 'package:otaku_world/features/profile/widgets/user_reviews.dart';
 import 'package:otaku_world/features/profile/widgets/user_social.dart';
 import 'package:otaku_world/theme/colors.dart';
+
+import '../../../core/ui/placeholders/anime_character_placeholder.dart';
+import '../../../generated/assets.dart';
 
 class MyProfileScreen extends HookWidget {
   const MyProfileScreen({super.key});
@@ -39,9 +41,7 @@ class MyProfileScreen extends HookWidget {
             if (client == null) {
               return _buildErrorScaffold(
                 message: ActivityConstants.clientError,
-                onPressed: () {
-                  profileBloc.add(LoadProfile(client!));
-                },
+                context: context,
               );
             }
             profileBloc.add(LoadProfile(client));
@@ -53,9 +53,14 @@ class MyProfileScreen extends HookWidget {
               backgroundColor: AppColors.raisinBlack,
               displacement: 60,
               onRefresh: () {
-                return Future.delayed(const Duration(seconds: 1), () {
-                  context.read<MyProfileBloc>().add(LoadProfile(client!));
-                });
+                return Future.delayed(
+                  const Duration(seconds: 1),
+                  () {
+                    if (context.mounted) {
+                      profileBloc.add(LoadProfile(client!));
+                    }
+                  },
+                );
               },
               notificationPredicate: (notification) {
                 return notification.depth == 2;
@@ -114,12 +119,13 @@ class MyProfileScreen extends HookWidget {
           } else if (state is MyProfileError) {
             return _buildErrorScaffold(
               message: state.message,
-              onPressed: () {
-                profileBloc.add(LoadProfile(client!));
-              },
+              context: context,
             );
           } else {
-            return const Text('Unknown State');
+            return _buildErrorScaffold(
+              message: StringConstants.somethingWentWrongError,
+              context: context,
+            );
           }
         },
       ),
@@ -135,14 +141,24 @@ class MyProfileScreen extends HookWidget {
 
   Widget _buildErrorScaffold({
     required String message,
-    required VoidCallback onPressed,
+    required BuildContext context,
   }) {
     return Scaffold(
       appBar: const SimpleAppBar(title: 'My Profile'),
       body: Center(
-        child: ErrorText(
-          message: message,
-          onTryAgain: onPressed,
+        child: AnimeCharacterPlaceholder(
+          asset: Assets.charactersErenYeager,
+          height: 300,
+          subheading: message,
+          onTryAgain: () {
+            final profileBloc = context.read<MyProfileBloc>();
+            final client = context.read<GraphqlClientCubit>().getClient();
+            if (client != null) {
+              profileBloc.add(LoadProfile(client));
+            }
+          },
+          isError: true,
+          isScrollable: true,
         ),
       ),
     );

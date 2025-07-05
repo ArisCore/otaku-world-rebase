@@ -9,6 +9,7 @@ import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 import 'package:otaku_world/graphql/__generated/graphql/schema.graphql.dart';
 
 import '../../../../bloc/graphql_client/graphql_client_cubit.dart';
+import '../../../../constants/string_constants.dart';
 import '../../../../core/ui/error_text.dart';
 
 class DiscoverStudiosSection extends HookWidget {
@@ -63,11 +64,22 @@ class DiscoverStudiosSection extends HookWidget {
           return ErrorText(
             message: state.message,
             onTryAgain: () {
-              studiosBloc.add(LoadData(client));
+              final client = context.read<GraphqlClientCubit>().getClient();
+              if (client != null) {
+                studiosBloc.add(LoadData(client));
+              }
             },
           );
         } else {
-          return const Text('Unknown State');
+          return ErrorText(
+            message: StringConstants.somethingWentWrongError,
+            onTryAgain: () {
+              final client = context.read<GraphqlClientCubit>().getClient();
+              if (client != null) {
+                studiosBloc.add(LoadData(client));
+              }
+            },
+          );
         }
       },
     );

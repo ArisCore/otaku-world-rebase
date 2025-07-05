@@ -1,7 +1,7 @@
 import '../../../core/ui/shimmers/detail_screens/shimmer_details.dart';
 
-class DiscoverImagePlaceholderCard extends StatelessWidget {
-  const DiscoverImagePlaceholderCard({
+class DiscoverImageCard extends StatelessWidget {
+  const DiscoverImageCard({
     super.key,
     required this.assetName,
     required this.onTap,
@@ -14,9 +14,12 @@ class DiscoverImagePlaceholderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Image.asset(
-        assetName,
-        fit: BoxFit.cover,
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: Image.asset(
+          assetName,
+          fit: BoxFit.fitWidth,
+        ),
       ),
     );
   }

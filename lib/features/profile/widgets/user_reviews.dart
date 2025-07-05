@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
 import 'package:otaku_world/bloc/paginated_data/paginated_data_bloc.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/placeholders/anime_character_placeholder.dart';
 import 'package:otaku_world/core/ui/shimmers/reviews_shimmer_list.dart';
 import 'package:otaku_world/generated/assets.dart';
@@ -88,12 +88,27 @@ class UserReviews extends StatelessWidget {
               ),
             );
           } else if (state is PaginatedDataError) {
-            return ErrorText(
-              message: state.message,
-              onTryAgain: () {},
+            return Center(
+              child: AnimeCharacterPlaceholder(
+                asset: Assets.charactersCigaretteGirl,
+                height: 150,
+                subheading: state.message,
+                onTryAgain: () {
+                  context.read<UserReviewsBloc>().add(LoadData(client));
+                },
+              ),
             );
           } else {
-            return const Text('Unknown State');
+            return Center(
+              child: AnimeCharacterPlaceholder(
+                asset: Assets.charactersCigaretteGirl,
+                height: 150,
+                subheading: StringConstants.somethingWentWrongError,
+                onTryAgain: () {
+                  context.read<UserReviewsBloc>().add(LoadData(client));
+                },
+              ),
+            );
           }
         },
       ),

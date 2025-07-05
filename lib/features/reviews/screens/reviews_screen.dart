@@ -8,13 +8,13 @@ import 'package:otaku_world/bloc/graphql_client/graphql_client_cubit.dart';
 import 'package:otaku_world/bloc/paginated_data/paginated_data_bloc.dart';
 import 'package:otaku_world/core/ui/appbars/simple_app_bar.dart';
 import 'package:otaku_world/core/ui/appbars/simple_sliver_app_bar.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/shimmers/reviews_shimmer_list.dart';
 import 'package:otaku_world/features/reviews/widgets/review_bottom_sheet.dart';
 import 'package:otaku_world/features/reviews/widgets/review_card.dart';
 
 import '../../../bloc/reviews/reviews/reviews_bloc.dart';
 import '../../../core/ui/media_section/scroll_to_top_button.dart';
+import '../../../core/ui/placeholders/anime_character_placeholder.dart';
 import '../../../generated/assets.dart';
 import '../../../theme/colors.dart';
 import '../../../utils/navigation_helper.dart';
@@ -40,8 +40,10 @@ class ReviewScreen extends HookWidget {
           final hasNextPage =
               (reviewBloc.state as PaginatedDataLoaded).hasNextPage;
           if (hasNextPage) {
-            final client = (context.read<GraphqlClientCubit>().state
-                    as GraphqlClientInitialized)
+            final client = (context
+                .read<GraphqlClientCubit>()
+                .state
+            as GraphqlClientInitialized)
                 .client;
             reviewBloc.add(LoadData(client));
           }
@@ -55,8 +57,10 @@ class ReviewScreen extends HookWidget {
       builder: (context, state) {
         dev.log('Rebuilding review list');
         if (state is PaginatedDataInitial) {
-          final client = (context.read<GraphqlClientCubit>().state
-                  as GraphqlClientInitialized)
+          final client = (context
+              .read<GraphqlClientCubit>()
+              .state
+          as GraphqlClientInitialized)
               .client;
           reviewBloc.add(LoadData(client));
           return _buildLoadingScaffold();
@@ -106,11 +110,12 @@ class ReviewScreen extends HookWidget {
                         final review = state.list[index]!;
                         return ReviewCard(
                           review: review,
-                          onPressed: () => NavigationHelper.goToReviewDetailScreen(
-                            context: context,
-                            reviewId: review.id,
-                            bloc: context.read<ReviewsBloc>(),
-                          ),
+                          onPressed: () =>
+                              NavigationHelper.goToReviewDetailScreen(
+                                context: context,
+                                reviewId: review.id,
+                                bloc: context.read<ReviewsBloc>(),
+                              ),
                         );
                       },
                       itemCount: state.list.length,
@@ -129,37 +134,35 @@ class ReviewScreen extends HookWidget {
               ),
             ),
           );
-        } else if (state is PaginatedDataError) {
-          return _buildErrorScaffold(state.message, () {
-            final client = (context.read<GraphqlClientCubit>().state
-                    as GraphqlClientInitialized)
-                .client;
-            context.read<ReviewsBloc>().add(LoadData(client));
-          });
-        } else {
-          return const Text('Unknown State');
         }
+        return _buildErrorScaffold(context);
       },
     );
   }
 
   Future<void> _refreshPage(BuildContext context) async {
     final client =
-        (context.read<GraphqlClientCubit>().state as GraphqlClientInitialized)
+        (context
+            .read<GraphqlClientCubit>()
+            .state as GraphqlClientInitialized)
             .client;
     context.read<ReviewsBloc>().add(RefreshData(client));
   }
 
-  Widget _buildErrorScaffold(String message, VoidCallback onTryAgain) {
+  Widget _buildErrorScaffold(BuildContext context) {
     return Scaffold(
       appBar: const SimpleAppBar(
         title: 'Reviews',
       ),
-      body: Center(
-        child: ErrorText(
-          message: message,
-          onTryAgain: onTryAgain,
-        ),
+      body: AnimeCharacterPlaceholder(
+        asset: Assets.charactersCigaretteGirl,
+        height: 300,
+        heading: 'Something went wrong!',
+        subheading: 'Please check your internet connection or try again later.',
+        onTryAgain: () {
+          _refreshPage(context);
+        },
+        isError: true,
       ),
     );
   }

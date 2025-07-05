@@ -24,7 +24,7 @@ class DiscoverScreen extends HookWidget {
         padding: const EdgeInsets.all(10),
         physics: const BouncingScrollPhysics(),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const DiscoverHeader(
               title: "Ignite your Anime \nAdventure",
@@ -33,35 +33,35 @@ class DiscoverScreen extends HookWidget {
                   " Anime, Fascinating Mangas, and Iconic Characters.",
             ),
             const SizedBox(height: 10),
-            DiscoverImagePlaceholderCard(
+            DiscoverImageCard(
               onTap: () {
                 context.push(RouteConstants.discoverAnime);
               },
               assetName: Assets.discoverPlaceholdersAnime,
             ),
             const SizedBox(height: 20),
-            DiscoverImagePlaceholderCard(
+            DiscoverImageCard(
               onTap: () {
                 context.push(RouteConstants.discoverManga);
               },
               assetName: Assets.discoverPlaceholdersManga,
             ),
             const SizedBox(height: 20),
-            DiscoverImagePlaceholderCard(
+            DiscoverImageCard(
               onTap: () {
                 context.push(RouteConstants.discoverCharacters);
               },
               assetName: Assets.discoverPlaceholdersCharacters,
             ),
             const SizedBox(height: 20),
-            DiscoverImagePlaceholderCard(
+            DiscoverImageCard(
               onTap: () {
                 context.push(RouteConstants.discoverStaff);
               },
               assetName: Assets.discoverPlaceholdersStaff,
             ),
             const SizedBox(height: 20),
-            DiscoverImagePlaceholderCard(
+            DiscoverImageCard(
               onTap: () {
                 context.push(RouteConstants.discoverStudios);
               },

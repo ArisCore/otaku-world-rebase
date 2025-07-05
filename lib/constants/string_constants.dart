@@ -1,5 +1,6 @@
 class StringConstants {
   static const String nullStringConstant = ' - - ';
+  static const String nullStringPlaceHolder = ' - ';
 
   static const socialHeading = 'Connect, Share, and \nDiscover';
   static const socialSubheading =
@@ -27,10 +28,10 @@ class StringConstants {
   static const deleteListEntryWarning =
       'Are you sure you want to delete this list entry?';
 
-  static const defaultLanguageDropdown = 'Japanese';
-
   static const urlValidationError = 'Please enter valid url';
   static const imageUrlValidationError = 'Please enter valid image url';
+
+  static const defaultLanguageDropdown = 'Japanese';
 }
 
 class LoginConstants {

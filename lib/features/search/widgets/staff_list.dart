@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:otaku_world/bloc/search/search_staff/search_staff_bloc.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/features/search/widgets/staff_card.dart';
 import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
@@ -100,7 +101,11 @@ class ResultStaffList extends HookWidget {
                     ],
                   );
           } else {
-            return const Text('Unknown State');
+            return const AnimeCharacterPlaceholder(
+              height: 300,
+              asset: Assets.charactersErenYeager,
+              subheading: StringConstants.somethingWentWrongError,
+            );
           }
         },
       ),

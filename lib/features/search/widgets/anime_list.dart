@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:otaku_world/bloc/search/search_anime/search_anime_bloc.dart';
 import 'package:otaku_world/bloc/search/search_bloc/search_bloc.dart';
-import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/placeholders/anime_character_placeholder.dart';
 import 'package:otaku_world/features/search/widgets/media_card.dart';
 import 'package:otaku_world/generated/assets.dart';
@@ -13,6 +12,7 @@ import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 
 import '../../../bloc/graphql_client/graphql_client_cubit.dart';
 import '../../../bloc/search/search_base/search_base_bloc.dart';
+import '../../../constants/string_constants.dart';
 
 class ResultAnimeList extends HookWidget {
   const ResultAnimeList({super.key});
@@ -62,8 +62,6 @@ class ResultAnimeList extends HookWidget {
             return const Center(
               child: CircularProgressIndicator(),
             );
-          } else if (state is SearchError) {
-            return ErrorText(message: state.message, onTryAgain: () {});
           } else if (state is SearchResultLoaded<Fragment$SearchResultMedia?>) {
             final list = state.list;
             final hasNextPage = state.hasNextPage;
@@ -98,8 +96,23 @@ class ResultAnimeList extends HookWidget {
                         ),
                     ],
                   );
+          } else if (state is SearchError) {
+            return AnimeCharacterPlaceholder(
+              asset: Assets.charactersSchoolGirl,
+              height: 300,
+              heading: StringConstants.somethingWentWrong,
+              subheading: state.message,
+              isScrollable: true,
+            );
           } else {
-            return const Text('Unknown State');
+            return const Center(
+              child: AnimeCharacterPlaceholder(
+                height: 300,
+                asset: Assets.charactersCigaretteGirl,
+                subheading: StringConstants.somethingWentWrongError,
+                isScrollable: true,
+              ),
+            );
           }
         },
       ),

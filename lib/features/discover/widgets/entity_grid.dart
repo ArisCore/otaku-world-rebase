@@ -38,10 +38,11 @@ class EntityGrid<E> extends StatelessWidget {
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 0),
               sliver: SliverGrid(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
+                gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 150,
                   childAspectRatio: 100 / 185,
-                  crossAxisSpacing: 10,
+                  // crossAxisSpacing: 10,
+                  // mainAxisSpacing: 10,
                 ),
                 delegate: SliverChildBuilderDelegate(
                   childCount: list.length,

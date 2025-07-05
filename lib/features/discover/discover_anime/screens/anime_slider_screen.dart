@@ -1,3 +1,5 @@
+import 'dart:developer' as dev;
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -5,11 +7,12 @@ import 'package:otaku_world/bloc/filter/filter_anime/filter_anime_bloc.dart';
 import 'package:otaku_world/core/ui/media_section/media_carousel_card.dart';
 import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 import 'package:otaku_world/theme/colors.dart';
-import 'dart:developer' as dev;
 
 import '../../../../bloc/graphql_client/graphql_client_cubit.dart';
+import '../../../../constants/string_constants.dart';
 import '../../../../core/ui/appbars/simple_app_bar.dart';
-import '../../../../core/ui/error_text.dart';
+import '../../../../core/ui/placeholders/anime_character_placeholder.dart';
+import '../../../../generated/assets.dart';
 import '../../../../utils/ui_utils.dart';
 
 class AnimeSliderScreen extends StatelessWidget {
@@ -86,18 +89,37 @@ class AnimeSliderScreen extends StatelessWidget {
             );
           } else if (state is FilterError) {
             return Center(
-              child: ErrorText(
-                message: state.message,
+              child: AnimeCharacterPlaceholder(
+                asset: Assets.charactersErenYeager,
+                height: 300,
+                subheading: state.message,
                 onTryAgain: () {
-                  final client = (context.read<GraphqlClientCubit>().state
-                          as GraphqlClientInitialized)
-                      .client;
-                  context.read<FilterAnimeBloc>().add(LoadMore(client));
+                  final client = context.read<GraphqlClientCubit>().getClient();
+                  if (client != null) {
+                    context.read<FilterAnimeBloc>().add(LoadMore(client));
+                  }
                 },
+                isError: true,
+                isScrollable: true,
+              ),
+            );
+          } else {
+            return Center(
+              child: AnimeCharacterPlaceholder(
+                asset: Assets.charactersNoInternet,
+                height: 300,
+                subheading: StringConstants.somethingWentWrongError,
+                onTryAgain: () {
+                  final client = context.read<GraphqlClientCubit>().getClient();
+                  if (client != null) {
+                    context.read<FilterAnimeBloc>().add(LoadMore(client));
+                  }
+                },
+                isError: true,
+                isScrollable: true,
               ),
             );
           }
-          return const Text('Unknown State');
         },
       ),
     );

@@ -5,6 +5,7 @@ import 'package:otaku_world/core/ui/filters/custom_slider.dart';
 import 'package:otaku_world/utils/ui_utils.dart';
 
 import '../../../../bloc/graphql_client/graphql_client_cubit.dart';
+import '../../../../constants/string_constants.dart';
 import '../../../../theme/colors.dart';
 import '../../error_text.dart';
 import '../custom_chips.dart';
@@ -66,10 +67,10 @@ class MediaTagsChips extends StatelessWidget {
         const SizedBox(height: 20),
         BlocBuilder<MediaTagsCubit, MediaTagsState>(
           builder: (context, state) {
+            final client = (context.read<GraphqlClientCubit>().state
+                    as GraphqlClientInitialized)
+                .client;
             if (state is MediaTagsInitial) {
-              final client = (context.read<GraphqlClientCubit>().state
-                      as GraphqlClientInitialized)
-                  .client;
               context.read<MediaTagsCubit>().loadMediaTags(client);
               return const CircularProgressIndicator();
             } else if (state is MediaTagsLoading) {
@@ -117,15 +118,23 @@ class MediaTagsChips extends StatelessWidget {
                 },
               );
             } else if (state is MediaTagsError) {
-              return ErrorText(message: state.message, onTryAgain: () {});
+              return ErrorText(
+                message: state.message,
+                onTryAgain: () {
+                  context.read<MediaTagsCubit>().loadMediaTags(client);
+                },
+              );
             } else {
-              return const Text('Unknown State');
+              return ErrorText(
+                message: StringConstants.somethingWentWrongError,
+                onTryAgain: () {
+                  context.read<MediaTagsCubit>().loadMediaTags(client);
+                },
+              );
             }
           },
         ),
       ],
     );
   }
-
-
 }

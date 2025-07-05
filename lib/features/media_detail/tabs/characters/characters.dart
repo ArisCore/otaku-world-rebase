@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:otaku_world/bloc/media_detail/characters/characters_bloc.dart';
 import 'package:otaku_world/bloc/paginated_data/paginated_data_bloc.dart';
-import 'package:otaku_world/core/ui/filters/custom_dropdown.dart';
 import 'package:otaku_world/core/ui/placeholders/anime_character_placeholder.dart';
+import 'package:otaku_world/core/ui/widgets/language_selection_mixin.dart';
 import 'package:otaku_world/graphql/__generated/graphql/details/characters.graphql.dart';
 import 'package:otaku_world/utils/extensions.dart';
 
 import '../../../../bloc/graphql_client/graphql_client_cubit.dart';
-import '../../../../constants/string_constants.dart';
 import '../../../../core/ui/shimmers/detail_screens/list/character_list_shimmer.dart';
 import '../../../../generated/assets.dart';
 import '../../../../graphql/__generated/graphql/schema.graphql.dart';
@@ -21,11 +20,7 @@ class Characters extends StatefulWidget {
   State<Characters> createState() => _CharactersState();
 }
 
-class _CharactersState extends State<Characters> {
-  List<String> availableLanguages = [];
-
-  String selectedLanguage = StringConstants.defaultLanguageDropdown;
-
+class _CharactersState extends State<Characters> with LanguageSelectionMixin {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<CharactersBloc, PaginatedDataState>(
@@ -41,7 +36,7 @@ class _CharactersState extends State<Characters> {
         } else if (state is PaginatedDataLoaded) {
           List<Query$Characters$Media$characters$edges?> characters =
               state.list as List<Query$Characters$Media$characters$edges?>;
-          loadLanguages(characters);
+          loadLanguagesFromVoiceActors(characters);
           if (characters.isEmpty) {
             return const AnimeCharacterPlaceholder(
               asset: Assets.charactersErenYeager,
@@ -69,21 +64,12 @@ class _CharactersState extends State<Characters> {
             },
             child: CustomScrollView(
               slivers: [
-                if (availableLanguages.isNotEmpty)
-                  SliverPadding(
-                    padding: const EdgeInsets.all(8.0),
-                    sliver: SliverToBoxAdapter(
-                      child: CustomDropdown(
-                        dropdownItems: availableLanguages,
-                        initialValue: selectedLanguage,
-                        onChange: (language) {
-                          setState(() {
-                            selectedLanguage = language;
-                          });
-                        },
-                      ),
-                    ),
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                  sliver: SliverToBoxAdapter(
+                    child: buildLanguageDropdown(),
                   ),
+                ),
                 SliverPadding(
                   padding: const EdgeInsets.all(10),
                   sliver: SliverList.separated(
@@ -143,21 +129,5 @@ class _CharactersState extends State<Characters> {
         );
       },
     );
-  }
-
-  void loadLanguages(
-      List<Query$Characters$Media$characters$edges?> characters) {
-    for (var character in characters) {
-      character?.voiceActorRoles?.forEach(
-        (voiceActorRole) {
-          var language = voiceActorRole!.voiceActor!.languageV2!;
-          if (!availableLanguages.contains(language)) {
-            availableLanguages.add(language);
-          }
-        },
-      );
-    }
-
-    availableLanguages.sort();
   }
 }

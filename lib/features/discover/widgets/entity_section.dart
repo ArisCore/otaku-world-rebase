@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:otaku_world/bloc/paginated_data/paginated_data_bloc.dart';
+import 'package:otaku_world/constants/string_constants.dart';
 import 'package:otaku_world/features/discover/widgets/entity_card.dart';
 import 'package:otaku_world/graphql/__generated/graphql/fragments.graphql.dart';
 import 'package:otaku_world/theme/colors.dart';
@@ -117,7 +118,13 @@ class EntitySection<B extends PaginatedDataBloc, E> extends HookWidget {
             },
           );
         } else {
-          return const Text('Unknown State');
+          return ErrorText(
+            message: StringConstants.somethingWentWrongError,
+            onTryAgain: () {
+              final client = context.read<GraphqlClientCubit>().getClient()!;
+              context.read<B>().add(LoadData(client));
+            },
+          );
         }
       },
     );

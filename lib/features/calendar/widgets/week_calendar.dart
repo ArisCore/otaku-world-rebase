@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 import '../../../bloc/calendar/week_calendar/week_calendar_bloc.dart';
-import '../../../core/ui/error_text.dart';
+import '../../../constants/string_constants.dart';
+import '../../../core/ui/placeholders/anime_character_placeholder.dart';
+import '../../../generated/assets.dart';
 import 'calendar_tab_bar.dart';
 import 'episodes_list.dart';
 
@@ -21,12 +23,7 @@ class WeekCalendar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<WeekCalendarBloc, WeekCalendarState>(
       builder: (context, state) {
-        if (state is WeekCalendarError) {
-          return ErrorText(
-            message: state.message,
-            onTryAgain: () {},
-          );
-        } else if (state is WeekCalendarInitialized) {
+        if (state is WeekCalendarInitialized) {
           return Column(
             mainAxisSize: MainAxisSize.max,
             children: [
@@ -54,9 +51,26 @@ class WeekCalendar extends StatelessWidget {
               ),
             ],
           );
+        } else if (state is WeekCalendarError) {
+          return Center(
+            child: AnimeCharacterPlaceholder(
+              asset: Assets.charactersErenYeager,
+              heading: 'Nothing to Show',
+              subheading: state.message,
+              isError: true,
+              onTryAgain: () =>
+                  context.read<WeekCalendarBloc>().add(RefreshCalendar()),
+            ),
+          );
         } else {
-          return const Center(
-            child: Text('Unknown state'),
+          return Center(
+            child: AnimeCharacterPlaceholder(
+              asset: Assets.charactersCigaretteGirl,
+              subheading: StringConstants.somethingWentWrongError,
+              isError: true,
+              onTryAgain: () =>
+                  context.read<WeekCalendarBloc>().add(RefreshCalendar()),
+            ),
           );
         }
       },

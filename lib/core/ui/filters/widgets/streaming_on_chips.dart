@@ -7,6 +7,8 @@ import 'package:otaku_world/core/ui/error_text.dart';
 import 'package:otaku_world/core/ui/filters/custom_chips.dart';
 import 'package:otaku_world/core/ui/filters/custom_choice_chip.dart';
 
+import '../../../../constants/string_constants.dart';
+
 class AnimePlatformsChips extends StatelessWidget {
   const AnimePlatformsChips({super.key, required this.selectedPlatforms});
 
@@ -14,13 +16,13 @@ class AnimePlatformsChips extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final client =
+        (context.read<GraphqlClientCubit>().state as GraphqlClientInitialized)
+            .client;
     final bloc = context.read<FilterAnimeBloc>();
     return BlocBuilder<AnimePlatformsCubit, AnimePlatformsState>(
       builder: (context, state) {
         if (state is AnimePlatformsInitial) {
-          final client = (context.read<GraphqlClientCubit>().state
-          as GraphqlClientInitialized)
-              .client;
           context.read<AnimePlatformsCubit>().loadAnimePlatforms(client);
           return const Center(child: CircularProgressIndicator());
         } else if (state is AnimePlatformsLoading) {
@@ -32,22 +34,32 @@ class AnimePlatformsChips extends StatelessWidget {
               return p == null
                   ? const SizedBox()
                   : CustomChoiceChip(
-                label: p,
-                value: p,
-                selected: selectedPlatforms.contains(p),
-                onSelected: (platform) {
-                  bloc.add(SelectPlatform(platform));
-                },
-                onUnselected: (platform) {
-                  bloc.add(UnselectPlatform(platform));
-                },
-              );
+                      label: p,
+                      value: p,
+                      selected: selectedPlatforms.contains(p),
+                      onSelected: (platform) {
+                        bloc.add(SelectPlatform(platform));
+                      },
+                      onUnselected: (platform) {
+                        bloc.add(UnselectPlatform(platform));
+                      },
+                    );
             }).toList(),
           );
         } else if (state is AnimePlatformsError) {
-          return ErrorText(message: state.message, onTryAgain: () {});
+          return ErrorText(
+            message: state.message,
+            onTryAgain: () {
+              context.read<AnimePlatformsCubit>().loadAnimePlatforms(client);
+            },
+          );
         } else {
-          return const Text('Unknown State');
+          return ErrorText(
+            message: StringConstants.somethingWentWrongError,
+            onTryAgain: () {
+              context.read<AnimePlatformsCubit>().loadAnimePlatforms(client);
+            },
+          );
         }
       },
     );
